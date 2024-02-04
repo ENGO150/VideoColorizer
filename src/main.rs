@@ -1,7 +1,10 @@
 use std::
 {
-    fs::remove_file,
-    path::Path,
+    ffi::OsStr, fs::
+    {
+        remove_file,
+        read_dir,
+    }, path::Path
 };
 
 use image::
@@ -20,12 +23,19 @@ use rand::
 
 fn main()
 {
-    for i in 1..106 //LOOP TROUGH FRAMES
-    {
-        let filename = format!("thumb{:04}.png", i);
-        println!("{}", i);
+    let mut n = 0;
 
-        colorize_img(&format!("./coze/{}", filename), &format!("./out/{}", filename)); //COLORIZE
+    for path in read_dir("./out/original").unwrap() //COUNT FRAMES
+    {
+        if path.unwrap().path().extension() == Some(OsStr::new("png")) { n += 1; } //THIS MAY BE DUMB AF BUT WELL
+    }
+
+    for i in 1..(n + 1u128) //LOOP TROUGH FRAMES
+    {
+        let filename = format!("{:10}.png", i);
+        println!("Processing frame {:10}/{:10}", i, n);
+
+        colorize_img(&format!("./out/original/{}", filename), &format!("./out/{}", filename)); //COLORIZE
     }
 }
 
