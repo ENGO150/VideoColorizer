@@ -1,19 +1,30 @@
 use std::
 {
-    ffi::OsStr, fs::
+    ffi::OsStr,
+    path::Path,
+    process::Command,
+    thread::sleep,
+    time::Duration,
+
+    fs::
     {
-        copy, read_dir, remove_file
-    }, io::
+        copy,
+        read_dir,
+        remove_file
+    },
+
+    io::
     {
-        stdin, stdout, Write
-    }, path::Path, process::Command, thread::sleep, time::Duration
+        stdin,
+        stdout,
+        Write
+    },
 };
 
 use image::
 {
     GenericImageView,
     ImageBuffer,
-    Pixel,
     Rgba,
 };
 
@@ -25,6 +36,10 @@ use rand::
 
 fn main()
 {
+    //CLEAN FRAMES DIRECTORIES
+    clean_pngs("./out/frames_original".to_string());
+    clean_pngs("./out/frames_new".to_string());
+
     let mut original_path = String::new();
 
     loop //ASK FOR ORIGINAL
@@ -59,8 +74,6 @@ fn main()
 
     println!("\nFrames successfully extracted. Starting distortion in 5 secs.\n");
     sleep(Duration::from_secs(5));
-
-    return;
 
     //COLORIZE FRAMES
     let mut n = 0;
@@ -100,13 +113,19 @@ fn main()
         .unwrap();
 }
 
-        colorize_img(&format!("./out/frames_original/{}", filename), &format!("./out/frames_new/{}", filename)); //COLORIZE
+fn clean_pngs(dir_path: String)
+{
+    for path in read_dir(dir_path).unwrap() //ITER
+    {
+        if path.as_ref().unwrap().path().extension() == Some(OsStr::new("png")) //PNG FOUND
+        {
+            remove_file(&path.unwrap().path()).expect("File deletion failed!");
+        }
     }
 }
 
 pub fn colorize_img(path_in: &str, path_out: &str)
 {
-    if Path::new(path_out).exists() { remove_file(path_out).expect("File deletion failed!"); } //REMOVE DUPLICATE FRAMES
     let mut img = image::open(path_in).expect("File not found!"); //LOAD ORIGINAL
 
     let (w, h) = img.dimensions();
