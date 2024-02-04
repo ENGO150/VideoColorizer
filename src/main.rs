@@ -113,6 +113,8 @@ fn main()
         .wait()
         .unwrap();
 
+    clean_pngs("./out/frames_new".to_string()); //CLEAN JUNK
+
     println!("\nSuccessfully colorized video. Output is stored at ./out/new.mp4");
 }
 
