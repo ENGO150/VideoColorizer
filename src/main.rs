@@ -85,7 +85,7 @@ pub fn colorize_img(path_in: &str, path_out: &str)
 
     let (w, h) = img.dimensions();
     let mut output: ImageBuffer<Rgba<u8>, Vec<u8>> = ImageBuffer::new(w, h);
-    let mut buffer: u8;
+    let mut buffer: u16;
 
     img = img.blur(1.5); //BLUR THAT
 
@@ -95,13 +95,19 @@ pub fn colorize_img(path_in: &str, path_out: &str)
 
         buffer = if thread_rng().gen_range(0..(img.width() * img.height() / 480)) == 69 { 255 } else { 0 };
 
-        let px = Rgba([(((buffer - distort(red) ) as i32 - 19).abs() / 2) as u8, (((buffer - distort(green)) as i32 - 70).abs() / 2) as u8, (((buffer - distort(blue)) as i32 - 22).abs() / 2) as u8, alpha]); //COMPLETELY FUCK THE COLORS
+        let mut px = Rgba([((distort(red) as i32 - (19 + buffer) as i32).abs() / 2) as u8, ((distort(green) as i32 - (70 + buffer) as i32).abs() / 2) as u8, ((distort(blue) as i32 - (22 + buffer) as i32).abs() / 2) as u8, alpha]); //COMPLETELY FUCK THE COLORS
+
+        //LAST EFFECT
+        for i in 0..3
+        {
+            px[i] = ((255 - ((px[i].saturating_pow(4) as f64) / 2.) as u8) as f32 * 1000./1375.) as u8;
+        }
 
         output.put_pixel
         (
             x,
             y,
-            px.map(|p| 255 - ((p.saturating_pow(4) as f64) / 2.) as u8),
+            px,
         ); //ADD TO OUTPUT
     }
 
