@@ -1,2 +1,7 @@
 Cargo.lock
 target
+
+out/original.mp4
+out/new.mp4
+out/frames_new/*
+out/frames_original/*
