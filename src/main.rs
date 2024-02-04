@@ -39,6 +39,7 @@ fn main()
     //CLEAN FRAMES DIRECTORIES
     clean_pngs("./out/frames_original".to_string());
     clean_pngs("./out/frames_new".to_string());
+    if Path::new("./out/new.mp4").exists() { remove_file("./out/new.mp4").expect("File deletion failed!"); }
 
     let mut original_path = String::new();
 
