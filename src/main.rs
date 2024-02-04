@@ -71,8 +71,34 @@ fn main()
 
     for i in 1..(n + 1u128) //LOOP TROUGH FRAMES
     {
-        let filename = format!("{:10}.png", i);
-        println!("Processing frame {:10}/{:10}", i, n);
+        let filename = format!("{:010}.png", i);
+        println!("Processing frame {i}/{n}");
+
+        let original_frame = format!("./out/frames_original/{}", filename);
+
+        colorize_img(&original_frame, &format!("./out/frames_new/{}", filename)); //COLORIZE
+        remove_file(original_frame).expect("File deletion failed!"); //DELETE NOW UNUSED FILE
+    }
+
+    Command::new("ffmpeg") //RUN FFMPEG
+        .arg("-framerate")
+        .arg("30")
+        .arg("-i")
+        .arg("./out/frames_new/%10d.png")
+        .arg("-i")
+        .arg("./out/original.mp4")
+        .arg("-c:a")
+        .arg("copy")
+        .arg("-c:v")
+        .arg("libx264")
+        .arg("-pix_fmt")
+        .arg("yuv420p")
+        .arg("./out/new.mp4")
+        .spawn()
+        .expect("Getting frames failed.")
+        .wait()
+        .unwrap();
+}
 
         colorize_img(&format!("./out/frames_original/{}", filename), &format!("./out/frames_new/{}", filename)); //COLORIZE
     }
