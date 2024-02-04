@@ -1,17 +1,12 @@
 use std::
 {
-    ffi::OsStr,
-    path::Path,
-
-    io::
-    {
-        stdin, stdout, Write
-    },
-
-    fs::
+    ffi::OsStr, fs::
     {
         copy, read_dir, remove_file
-    },
+    }, io::
+    {
+        stdin, stdout, Write
+    }, path::Path, process::Command, thread::sleep, time::Duration
 };
 
 use image::
@@ -45,9 +40,25 @@ fn main()
         original_path.clear();
     }
 
-    println!(); //NEWLINE
-
     copy(original_path, "./out/original.mp4").expect("Copying file failed."); //COPY lmao
+
+    println!("\nGET READY FOR SHITLOAD OF OUTPUT IN 5 SECS!\n"); //NEWLINE
+
+    sleep(Duration::from_secs(5));
+
+    Command::new("ffmpeg") //RUN FFMPEG
+        .arg("-i")
+        .arg("./out/original.mp4")
+        .arg("-vf")
+        .arg("fps=30")
+        .arg("./out/frames_original/%10d.png")
+        .spawn()
+        .expect("Getting frames failed.")
+        .wait()
+        .unwrap();
+
+    println!("\nFrames successfully extracted. Starting distortion in 5 secs.\n");
+    sleep(Duration::from_secs(5));
 
     return;
 
