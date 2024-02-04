@@ -1,10 +1,17 @@
 use std::
 {
-    ffi::OsStr, fs::
+    ffi::OsStr,
+    path::Path,
+
+    io::
     {
-        remove_file,
-        read_dir,
-    }, path::Path
+        stdin, stdout, Write
+    },
+
+    fs::
+    {
+        copy, read_dir, remove_file
+    },
 };
 
 use image::
@@ -23,9 +30,30 @@ use rand::
 
 fn main()
 {
-    let mut n = 0;
+    let mut original_path = String::new();
 
-    for path in read_dir("./out/original").unwrap() //COUNT FRAMES
+    loop //ASK FOR ORIGINAL
+    {
+        print!("Please enter full path to your MP4 video.\n>>> ");
+        stdout().flush().unwrap();
+
+        stdin().read_line(&mut original_path).expect("Reading failed.");
+        original_path = original_path.trim().to_string();
+
+        if original_path.ends_with(".mp4") && Path::new(&original_path).exists() { break; }
+
+        original_path.clear();
+    }
+
+    println!(); //NEWLINE
+
+    copy(original_path, "./out/original.mp4").expect("Copying file failed."); //COPY lmao
+
+    return;
+
+    //COLORIZE FRAMES
+    let mut n = 0;
+    for path in read_dir("./out/frames_original").unwrap() //COUNT FRAMES
     {
         if path.unwrap().path().extension() == Some(OsStr::new("png")) { n += 1; } //THIS MAY BE DUMB AF BUT WELL
     }
@@ -35,7 +63,7 @@ fn main()
         let filename = format!("{:10}.png", i);
         println!("Processing frame {:10}/{:10}", i, n);
 
-        colorize_img(&format!("./out/original/{}", filename), &format!("./out/{}", filename)); //COLORIZE
+        colorize_img(&format!("./out/frames_original/{}", filename), &format!("./out/frames_new/{}", filename)); //COLORIZE
     }
 }
 
@@ -56,7 +84,7 @@ pub fn colorize_img(path_in: &str, path_out: &str)
 
         buffer = if thread_rng().gen_range(0..(img.width() * img.height() / 480)) == 69 { 255 } else { 0 };
 
-        let px = Rgba([(((buffer - distort(red) )as i32 - 19).abs() / 2) as u8, (((buffer - distort(green)) as i32 - 70).abs() / 2) as u8, (((buffer - distort(blue)) as i32 - 22).abs() / 2) as u8, alpha]); //COMPLETELY FUCK THE COLORS
+        let px = Rgba([(((buffer - distort(red) ) as i32 - 19).abs() / 2) as u8, (((buffer - distort(green)) as i32 - 70).abs() / 2) as u8, (((buffer - distort(blue)) as i32 - 22).abs() / 2) as u8, alpha]); //COMPLETELY FUCK THE COLORS
 
         output.put_pixel
         (
