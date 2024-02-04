@@ -36,7 +36,7 @@ pub fn colorize_img(path_in: &str, path_out: &str)
 
     let (w, h) = img.dimensions();
     let mut output: ImageBuffer<Rgba<u8>, Vec<u8>> = ImageBuffer::new(w, h);
-    let mut negative: bool;
+    let mut buffer: u8;
 
     img = img.blur(1.5); //BLUR THAT
 
@@ -44,9 +44,9 @@ pub fn colorize_img(path_in: &str, path_out: &str)
     {
         let Rgba([red, green, blue, alpha]) = pixel;
 
-        negative = thread_rng().gen_range(0..(img.width() * img.height() / 480)) == 69;
+        buffer = if thread_rng().gen_range(0..(img.width() * img.height() / 480)) == 69 { 255 } else { 0 };
 
-        let px = Rgba([((distort(red, negative) as i32 - 19).abs() / 2) as u8, ((distort(green, negative) as i32 - 70).abs() / 2) as u8, ((distort(blue, negative) as i32 - 22).abs() / 2) as u8, alpha]); //COMPLETELY FUCK THE COLORS
+        let px = Rgba([(((buffer - distort(red) )as i32 - 19).abs() / 2) as u8, (((buffer - distort(green)) as i32 - 70).abs() / 2) as u8, (((buffer - distort(blue)) as i32 - 22).abs() / 2) as u8, alpha]); //COMPLETELY FUCK THE COLORS
 
         output.put_pixel
         (
@@ -59,7 +59,7 @@ pub fn colorize_img(path_in: &str, path_out: &str)
     output.save(path_out).expect("Saving failed!"); //SAVE OUTPUT
 }
 
-fn distort(p: u8, negative: bool) -> u8 //FUCK THE IMAGE
+fn distort(p: u8) -> u8 //FUCK THE IMAGE
 {
     let mut returning = if p != 0
     {
@@ -67,11 +67,6 @@ fn distort(p: u8, negative: bool) -> u8 //FUCK THE IMAGE
     } else { 0 };
 
     returning = (returning as f32 * 1./4.) as u8;
-
-    if negative
-    {
-        returning = 255 - returning;
-    }
 
     return returning;
 }
