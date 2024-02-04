@@ -111,6 +111,8 @@ fn main()
         .expect("Getting frames failed.")
         .wait()
         .unwrap();
+
+    println!("\nSuccessfully colorized video. Output is stored at ./out/new.mp4");
 }
 
 fn clean_pngs(dir_path: String)
